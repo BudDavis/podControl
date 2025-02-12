@@ -1,0 +1,40 @@
+START (Input Parameters for # of Players)
+
+STOP (Closes All Instances)
+
+ 
+
+Load Orientation
+
+Load Intro
+
+Load Hoist
+
+Load Fog
+
+Load Minefield
+
+Load Hard Landing
+
+Load Soft Landing
+
+Load Epilogue
+
+ 
+
+Fast Forward (Toggle)
+
+Pause (Toggle)
+
+// Displays
+Pod 1 
+
+Status: Running
+
+Players: 3
+
+Chapter: Hoist
+
+Time since start: 03:23
+
+Will complete in: TBD
