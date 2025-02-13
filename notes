@@ -1,40 +1,36 @@
-START (Input Parameters for # of Players)
+// Information sent from podControl to the Experience
 
-STOP (Closes All Instances)
+{"cmd":"START","num_playes":3}
+{"cmd":"STOP"}     // stops the current chapter.  cannot be resumed.
+{"cmd: "SHUTDOWN"} // a shutdown turns the machines off.
+{"cmd":"PAUSE"}
+{"cmd":"RESUME"}
+{"cmd":"LOAD","chapter":"Orientation"}
+{"cmd":"LOAD","chapter":"Intro"}
+{"cmd":"LOAD","chapter":"Hoist"}
+{"cmd":"LOAD","chapter":"Fog"}
+{"cmd":"LOAD","chapter":"Minefield"}
+{"cmd":"LOAD","chapter":"Hard Landing"}
+{"cmd":"LOAD","chapter":"Soft Landing"}
+{"cmd":"LOAD","chapter":"Epilogue"}
+{"cmd":"STATUS"}
 
- 
+upon receipt of a command, 
+each pod will reply with a status message (defined below)
 
-Load Orientation
 
-Load Intro
+// Information sent to podControl from the Experience
+{"state":"RUNNING","chapter":"Fog","pod_status":"GREEN",
+ "elapsed_time":"00:01","remaining_time"="02:12",
+ "num_players":3,"status":["good","not turned on","whatever"],
 
-Load Hoist
-
-Load Fog
-
-Load Minefield
-
-Load Hard Landing
-
-Load Soft Landing
-
-Load Epilogue
-
- 
-
-Fast Forward (Toggle)
-
-Pause (Toggle)
-
-// Displays
-Pod 1 
-
-Status: Running
-
-Players: 3
-
-Chapter: Hoist
-
-Time since start: 03:23
-
-Will complete in: TBD
+// state can be "IDLE" "RUNNING" "PAUSED "ERROR"
+// chapter is the current chapter
+// pod_status can be RED or YELLOW or GREEN. Overall status of all
+// machines in the 'pod'. integer 1,2,3
+// elapsed time is a string, minutes ":" seconds, showing how
+//              far into the experience
+// remaining_time is a string, minute ":" seconds, showing time
+//              until the experience is over
+// status:  array of strings, Copilot, Medic, Crew Chief.  Can be free 
+//          form.  "" means things are fine.
