@@ -1,0 +1,66 @@
+<html>
+    <form>
+        <input type="text" id="output">
+        <input type="text" id="input"> </input>
+       <button type=button onclick="send()">Send </button>
+    </form>
+    <p>
+       preformatted javascript commands
+    </p>
+       <button type=button onclick="pause()">Pause </button>
+       <button type=button onclick="stop()">Pause </button>
+</html>
+
+<script>
+
+    //not sure why this has to be done...
+    // hack
+textbox=document.getElementById("output");
+textbox.value = textbox.value="";
+textbox=document.getElementById("input");
+textbox.value = textbox.value="";
+    // end hack
+let socket = new WebSocket("ws://169.254.112.122:9000");
+
+socket.onopen = function(e) {
+    console.log("open");
+};
+
+socket.onerror = function(e) {
+    console.log("error on open");
+};
+socket.onmessage = function(event) {
+    textbox=document.getElementById("output");
+    textbox.value = textbox.value+event.msg;
+
+    // now decide if it is formatted in a way that is understood
+    // and if so, put it in an object
+    if (textbox.value.indexOf("status")) {
+        // the string has 'status' in it, so lets consider it to be 
+    }
+};
+
+socket.onclose = function(event) {
+};
+
+socket.onerror = function(error) {
+  console.log("error");
+};
+function send() {
+    console.log("send button");
+    textbox=document.getElementById("input");
+    socket.send(textbox.value);
+}
+function pause()
+{
+    cmd="{\"cmd\":\"pause\"}";
+    console.log("sending "+cmd);
+    socket.send(cmd);
+}
+function stop()
+{
+    cmd="{\"cmd\":\"stop\"}";
+    console.log("sending "+cmd);
+    socket.send(cmd);
+}
+</script>

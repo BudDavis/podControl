@@ -305,3 +305,20 @@
 
 </body>
 </html>
+<script>
+    // Here are the addresses of the 'master' machine in each
+    // 'pod'.
+    port = 9000;
+    podIp = new Array("192.168.1.1","192.168.1.2","192.168.1.3");
+    podConn = new Array(null,null,null);
+
+    for (i in podConn) {
+        console.log("opening "+"ws://"+podIp[i]+":"+port);
+        podConn[i] = new WebSocket("ws://"+podIp[i]+":"+port);
+        podConn[i].
+    }
+    podConn[i].onopen = function(e) {
+     console.log("error on open");
+    };
+
+</script>
