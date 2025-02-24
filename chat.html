@@ -5,10 +5,44 @@
        <button type=button onclick="send()">Send </button>
     </form>
     <p>
-       preformatted javascript commands
     </p>
+    <p>
+       <button type=button onclick="start()">Start </button> 
+       <input type="text" id="players" value=1></input>
+       <button type=button onclick="stop()">Stop </button>
        <button type=button onclick="pause()">Pause </button>
-       <button type=button onclick="stop()">Pause </button>
+       <button type=button onclick="resume()">Resume </button>
+       <button type=button onclick="shutdown()">Shutdown </button>
+       <button type=button onclick="status()">Status </button>
+    </p>
+    <p>
+    <list>
+       <li>
+       <button type=button onclick="load(0)">Load Chapter - Orientation</button>
+       </li>
+       <li>
+       <button type=button onclick="load(1)">Load Chapter - Intro</button>
+       </li>
+       <li>
+       <button type=button onclick="load(2)">Load Chapter - Hoist</button>
+       </li>
+       <li>
+       <button type=button onclick="load(3)">Load Chapter - Fog</button>
+       </li>
+       <li>
+       <button type=button onclick="load(4)">Load Chapter - Minefield</button>
+       </li>
+       <li>
+       <button type=button onclick="load(5)">Load Chapter - Hard Landing</button>
+       </li>
+       <li>
+       <button type=button onclick="load(6)">Load Chapter - Soft Landing</button>
+       </li>
+       <li>
+       <button type=button onclick="load(7)">Load Chapter - Epilogue</button>
+       </li>
+    </list>
+    </p>
 </html>
 
 <script>
@@ -57,10 +91,47 @@ function pause()
     console.log("sending "+cmd);
     socket.send(cmd);
 }
+function start()
+{
+    cmd="{\"cmd\":\"start\"}";
+    let t=document.getElementById("players").value;
+    console.log("sending "+cmd+"players:"+t);
+    socket.send(cmd);
+}
 function stop()
 {
     cmd="{\"cmd\":\"stop\"}";
     console.log("sending "+cmd);
+    socket.send(cmd);
+}
+function resume()
+{
+    cmd="{\"cmd\":\"resume\"}";
+    console.log("sending "+cmd);
+    socket.send(cmd);
+}
+function shutdown()
+{
+    cmd="{\"cmd\":\"shutdown\"}";
+    console.log("sending "+cmd);
+    socket.send(cmd);
+}
+function status()
+{
+    cmd="{\"cmd\":\"status\"}";
+    console.log("sending "+cmd);
+    socket.send(cmd);
+}
+function load(a)
+{
+    cmd="{\"cmd\":\"load\"}";
+    const title =["Load Chapter - Orientation","Load Chapter - Intro",
+               "Load Chapter - Hoist","Load Chapter - Fog",
+               "Load Chapter - Minefield",
+               "Load Chapter - Hard Landing",
+               "Load Chapter - Soft Landing",
+               "Load Chapter - Epilogue"];    
+    console.log("sending "+cmd+" " + title[a]);
     socket.send(cmd);
 }
 </script>
