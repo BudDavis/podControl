@@ -1,6 +1,6 @@
 <html>
     <p>
-       <input type="text" id="ip" value="169.254.112.122"></input>
+       <input type="text" id="ip" value="169.254.112.200"></input>
        <button type=button onclick="new_connection()">New Connection</button>
     </p>
     <p>
@@ -53,18 +53,12 @@
 
 <script>
 
-    //not sure why this has to be done...
-    // hack
-//textbox=document.getElementById("output");
-//textbox.value = textbox.value="";
-//textbox=document.getElementById("input");
-//textbox.value = textbox.value="";
-    // end hack
+id="1";
 
-let id="1";
-//let socket=new WebSocket("ws://"+"69.254.112.122"+":9000");
-let socket=null;
-new_connection();
+ip = document.getElementById("ip").value;
+console.log("ip is "+ ip);
+socket = new WebSocket("ws://"+ip+":9000");
+
 socket.onopen = function(e) {
     console.log("open");
 };
@@ -77,12 +71,6 @@ socket.onmessage = function(event) {
     console.log("got a message " + event.data);
     textbox=document.getElementById("output");
     textbox.value = event.data + '\n' + textbox.value;
-
-    // now decide if it is formatted in a way that is understood
-    // and if so, put it in an object
-    //if (textbox.value.indexOf("status")) {
-        // the string has 'status' in it, so lets consider it to be 
-    //}
 };
 
 socket.onclose = function(event) {
@@ -167,10 +155,6 @@ function new_connection()
 {
     ip = document.getElementById("ip").value;
     console.log("ip is "+ ip);
-    // clear out the output box
-    //if (socket) {
-    //   socket.close();
-    //}
     socket = new WebSocket("ws://"+ip+":9000");
     textbox=document.getElementById("output");
     textbox.value = "";
