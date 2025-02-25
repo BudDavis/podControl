@@ -1,3 +1,8 @@
+systemctl --user status broadcast
+g++ -o broadcast_server broadcast_server.cpp -I./
+
+
+
 // Information sent from podControl to the Experience
 
 {"cmd":"START","num_playes":3}
