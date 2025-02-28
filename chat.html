@@ -1,27 +1,32 @@
 <html>
     <p>
-       <input type="text" id="ip" value="169.254.112.122"></input>
+       <input type="text" id="ip"></input>
        <button type=button onclick="new_connection()">New Connection</button>
+       <input type="text" id="pod" value="1"></input>
+       <button type=button onclick="new_pod()">New Pod</button>
     </p>
     <p>
-        <textarea type="textarea" id="output"></textarea>
+        <textarea type="textarea" id="output"cols=60 rows=10 ></textarea>
     </p>
     <p> 
-        <input type="text" id="input"> </input>
+       <input type="text" id="input"> </input>
        <button type=button onclick="send()">Send </button>
     </p>
     <p>
     </p>
     <p>
+       <button type=button onclick="poweron()">Power On</button> 
        <button type=button onclick="start()">Start </button> 
        <input type="text" id="players" value=1></input>
+</p>
+<p>
        <button type=button onclick="stop()">Stop </button>
        <button type=button onclick="pause()">Pause </button>
        <button type=button onclick="resume()">Resume </button>
        <button type=button onclick="shutdown()">Shutdown </button>
        <button type=button onclick="status()">Status </button>
     </p>
-    <p>
+<p>
     <list>
        <li>
        <button type=button onclick="load(0)">Load Chapter - Orientation</button>
@@ -49,22 +54,56 @@
        </li>
     </list>
     </p>
+    <p>
+<h2>Info</h2>
+<list>
+<li>
+Start - Starts the UE program on up to 3 machines in the pod.  Needs to have the number of machines (1,2,3)
+</li>
+<li>
+Stop - Stops the UE program on all machines in the pod.
+</li>
+<li>
+Pause - Pauses the exection of the experience (UE5 internal)
+</li>
+<li>
+Resume - Resumes the execution of the experience after it has been paused (UE5 internal)
+</li>
+<li>
+Power Off - Powers off the computer (Windows Script)
+</li>
+<li>
+Status - Request status (UE5 internal)
+</li>
+<li>
+Load - Load command request the UE master machine to load a specific chapter.
+</li>
+</list>
+    </p>
 </html>
 
 <script>
+/////////////////////////////////////////////////////////////////
+// 
+// Data that may need to be changed:
+defaultWebSockServer="169.254.112.203";
+ip.value = defaultWebSockServer;
+podMac = [[1,2,3],[1,2,3]];
 
-    //not sure why this has to be done...
-    // hack
-//textbox=document.getElementById("output");
-//textbox.value = textbox.value="";
-//textbox=document.getElementById("input");
-//textbox.value = textbox.value="";
-    // end hack
+/////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////
+// These commands are special.  They go out on the unix
+// machine that copies out the websockets to all of the clients
+class systemCmd {
+    cmd;
+};
+/////////////////////////////////////////////////////////////////
+id="1";
 
-let id="1";
-//let socket=new WebSocket("ws://"+"69.254.112.122"+":9000");
-let socket=null;
-new_connection();
+ip = document.getElementById("ip").value;
+console.log("ip is "+ ip);
+socket = new WebSocket("ws://"+ip+":9000");
+
 socket.onopen = function(e) {
     console.log("open");
 };
@@ -77,12 +116,6 @@ socket.onmessage = function(event) {
     console.log("got a message " + event.data);
     textbox=document.getElementById("output");
     textbox.value = event.data + '\n' + textbox.value;
-
-    // now decide if it is formatted in a way that is understood
-    // and if so, put it in an object
-    //if (textbox.value.indexOf("status")) {
-        // the string has 'status' in it, so lets consider it to be 
-    //}
 };
 
 socket.onclose = function(event) {
@@ -106,7 +139,7 @@ function start()
       players;
     };
     d = new complexCmd();
-    d.id = 1;
+    d.id = id;
     d.cmd = "start";
     d.players = document.getElementById("players").value;
     cmd = JSON.stringify(d);
@@ -135,12 +168,24 @@ function simple_cmd(a) {
         cmd;
     } 
     d = new simpleCmd();
-    d.id = 1;
+    d.id = id;
     d.cmd = a;
     cmd = JSON.stringify(d);
     console.log("sending "+cmd);
     socket.send(cmd);
+
 }
+function poweron()
+{
+   // for power on, we send out a command to send a wol string for 
+   // each machine in the pod
+   d = new systemCmd();
+   d.cmd = "wol + 00:00:00:00:";
+   cmd=JSON.stringify(d);
+   console.log("sending "+cmd);
+   socket.send(cmd);
+}
+
 function load(a)
 {
     const title =["Orientation","Intro",
@@ -158,7 +203,7 @@ function load(a)
     d = new loadCmd();
     d.cmd="load";
     d.title=title[a];
-    d.id = 1;
+    d.id = id;
     cmd = JSON.stringify(d);
     console.log("sending "+cmd);
     socket.send(cmd);
@@ -167,12 +212,14 @@ function new_connection()
 {
     ip = document.getElementById("ip").value;
     console.log("ip is "+ ip);
-    // clear out the output box
-    //if (socket) {
-    //   socket.close();
-    //}
+    console.log("ws://"+ip+":9000");
     socket = new WebSocket("ws://"+ip+":9000");
     textbox=document.getElementById("output");
     textbox.value = "";
+}
+function new_pod()
+{
+    console.log("pod number has changed");
+    id = document.getElementById("pod").value;
 }
 </script>

@@ -120,7 +120,9 @@ public:
                 m_connections.erase(a.hdl);
             } else if (a.type == MESSAGE) {
                 lock_guard<mutex> guard(m_connection_lock);
-
+#if 0
+                check the message for the string "start" "stop" "shutdown"
+#endif
                 con_list::iterator it;
                 for (it = m_connections.begin(); it != m_connections.end(); ++it) {
                     m_server.send(*it,a.msg);

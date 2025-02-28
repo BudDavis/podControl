@@ -1,7 +1,23 @@
+wol is the wakeonlan program
+
+https://wiki.archlinux.org/title/Wake-on-LAN
+
+possible mac addresses
+  04:7c:16:72:93:c2
+  d8:43:ae:1e:3a:5f
+  6c:6e:07:13:59:81
+  d8:43:ae:1e:3a:54
+  c8:b3:73:23:6f:ea
+
 systemctl --user status broadcast
 g++ -o broadcast_server broadcast_server.cpp -I./
 
+// this one works
+winexe -U ADMIN%1234 //169.254.112.122 'cmd /k C:\Users\admin\Desktop\"Run MoH"\Stop_MoH.bat'
 
+winexe -U ADMIN%1234 //169.254.112.122 'cmd /c dir c:\users\admin\Desktop\"Run MoH"
+
+// not this,,,,winexe -U ADMIN%1234 //169.254.112.122 "C:\users\admin\Desktop\Windows\MoHVR.exe start"
 
 // Information sent from podControl to the Experience
 
