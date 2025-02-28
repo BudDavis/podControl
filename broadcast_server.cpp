@@ -36,9 +36,6 @@ using websocketpp::lib::condition_variable;
 std::string iAmPod = "1";
 std::string iAmA = "copilot";
 
-volatile bool iAmTheMaster = false;
-// believe this until proven otherwise 
-
 enum action_type {
     SUBSCRIBE,
     UNSUBSCRIBE,
@@ -132,7 +129,7 @@ public:
                 m_connections.erase(a.hdl);
             } else if (a.type == MESSAGE) {
                 lock_guard<mutex> guard(m_connection_lock);
-                {
+#if 1
                    // These messages need to process quickly
                    // Expect to move this into it's own function and
                    // perhaps its own thread eventually
@@ -155,20 +152,13 @@ public:
                           std::cout << "return value is " << stat << std::endl;
                        }
                    }
-                }
-                if (iAmTheMaster)
-                {
+#endif
                    con_list::iterator it;
                    for (it = m_connections.begin(); it != m_connections.end(); ++it) {
                        m_server.send(*it,a.msg);
                    }
-                }
-                else
-                {
-                    // i am not the master
-                }
-
-            } else {
+            } 
+            else {
                 // undefined.
             }
         }
@@ -185,15 +175,15 @@ private:
     condition_variable m_action_cond;
 };
 
-int main() {
-    // read environment variables
-    char *value = getenv("pod");
-    std::string pod;
-    if (value)
+int main(int argc,char* argv[]) {
+    // read cmd arguments
+#if 0
+    if (argc>0)
     {
-        pod = std::string(value);
-        std::cout << "there is a pod env var " << pod << std::endl;
+        std::cout << argv[0] << "  " << argv[1] << std::endl;
     }
+    std::string pod;
+#endif
     try {
     broadcast_server server_instance;
 
@@ -209,17 +199,3 @@ int main() {
         std::cout << e.what() << std::endl;
     }
 }
-/* Notes
- * Algorithm:
- *      set a timer to detect time since last recieved message.
- *      for every "i am the master" message, accept it and only
- *           rebroadcast if the master is you.
- *      if the timer exceeds 10 seconds
- *      {
- *           send a message()
- *           if the message is not recieved
- *           then you are the master.
- *           enable the broadcasting
- *           declare it to the world
- *       }
- */
