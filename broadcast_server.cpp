@@ -5,6 +5,8 @@
 #include <iostream>
 #include <set>
 
+#include <stdlib.h>
+
 #include "json.hpp"
 
 /*#include <boost/thread.hpp>
@@ -29,6 +31,13 @@ using websocketpp::lib::condition_variable;
  * on_close remove connection_hdl from channel
  * on_message queue send to all channels
  */
+
+// to come in from the environment
+std::string iAmPod = "1";
+std::string iAmA = "copilot";
+
+volatile bool iAmTheMaster = false;
+// believe this until proven otherwise 
 
 enum action_type {
     SUBSCRIBE,
@@ -114,6 +123,7 @@ public:
 
             lock.unlock();
 
+            // a message of some type has been recieved
             if (a.type == SUBSCRIBE) {
                 lock_guard<mutex> guard(m_connection_lock);
                 m_connections.insert(a.hdl);
@@ -122,17 +132,42 @@ public:
                 m_connections.erase(a.hdl);
             } else if (a.type == MESSAGE) {
                 lock_guard<mutex> guard(m_connection_lock);
-#if 0
-                // These messages need to process quickly
-                // Expect to move this into it's own function and
-                // perhaps its own thread eventually
-
-                check the message for the string "start" "stop" "shutdown"
-#endif
-                con_list::iterator it;
-                for (it = m_connections.begin(); it != m_connections.end(); ++it) {
-                    m_server.send(*it,a.msg);
+                {
+                   // These messages need to process quickly
+                   // Expect to move this into it's own function and
+                   // perhaps its own thread eventually
+                   std::string S = a.msg->get_payload();
+                   std::cout << "the string is "<< S << std::endl;
+                   //sending {"id":"2","cmd":"stop"} chat.html:175:13
+                   //check the message for the string "start" "stop" "shutdown"
+                   nlohmann::json j = nlohmann::json::parse(S);
+                   std::cout << j["cmd"] << " is the cmd " << std::endl;
+                   // for testing the idea
+                   if (j["cmd"]=="stop" && j["id"] == "1" )
+                   {
+                       std::cout << "command matches" << std::endl;
+                       if (j.contains("cmd_text"))
+                       {
+                          //std::string S = "/bin/bash echo " +std::string(j["cmd_text"]) + "&";
+                          std::string S = "/bin/bash -c echo \"hello\" ";
+                          int stat = system(S.c_str());
+                          std::cout << "system command with " + S << std::endl;
+                          std::cout << "return value is " << stat << std::endl;
+                       }
+                   }
                 }
+                if (iAmTheMaster)
+                {
+                   con_list::iterator it;
+                   for (it = m_connections.begin(); it != m_connections.end(); ++it) {
+                       m_server.send(*it,a.msg);
+                   }
+                }
+                else
+                {
+                    // i am not the master
+                }
+
             } else {
                 // undefined.
             }
@@ -151,6 +186,14 @@ private:
 };
 
 int main() {
+    // read environment variables
+    char *value = getenv("pod");
+    std::string pod;
+    if (value)
+    {
+        pod = std::string(value);
+        std::cout << "there is a pod env var " << pod << std::endl;
+    }
     try {
     broadcast_server server_instance;
 
@@ -166,3 +209,17 @@ int main() {
         std::cout << e.what() << std::endl;
     }
 }
+/* Notes
+ * Algorithm:
+ *      set a timer to detect time since last recieved message.
+ *      for every "i am the master" message, accept it and only
+ *           rebroadcast if the master is you.
+ *      if the timer exceeds 10 seconds
+ *      {
+ *           send a message()
+ *           if the message is not recieved
+ *           then you are the master.
+ *           enable the broadcasting
+ *           declare it to the world
+ *       }
+ */
