@@ -90,6 +90,7 @@ defaultWebSockServer="169.254.112.203";
 ip.value = defaultWebSockServer;
 podMac = [[1,2,3],[1,2,3]];
 
+<<<<<<< HEAD
 /////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////
 // These commands are special.  They go out on the unix
@@ -98,6 +99,8 @@ class systemCmd {
     cmd;
 };
 /////////////////////////////////////////////////////////////////
+=======
+>>>>>>> 39cb12ca61c2a06fb68281bd1aac2b65ea655f87
 id="1";
 
 ip = document.getElementById("ip").value;
@@ -211,7 +214,6 @@ function load(a)
 function new_connection()
 {
     ip = document.getElementById("ip").value;
-    console.log("ip is "+ ip);
     console.log("ws://"+ip+":9000");
     socket = new WebSocket("ws://"+ip+":9000");
     textbox=document.getElementById("output");
