@@ -5,6 +5,8 @@
 #include <iostream>
 #include <set>
 
+#include "json.hpp"
+
 /*#include <boost/thread.hpp>
 #include <boost/thread/mutex.hpp>
 #include <boost/thread/condition_variable.hpp>*/
@@ -121,6 +123,10 @@ public:
             } else if (a.type == MESSAGE) {
                 lock_guard<mutex> guard(m_connection_lock);
 #if 0
+                // These messages need to process quickly
+                // Expect to move this into it's own function and
+                // perhaps its own thread eventually
+
                 check the message for the string "start" "stop" "shutdown"
 #endif
                 con_list::iterator it;
