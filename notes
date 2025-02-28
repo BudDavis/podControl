@@ -1,3 +1,5 @@
+sudo cp chat.html /usr/share/nginx/html
+
 wol is the wakeonlan program
 
 https://wiki.archlinux.org/title/Wake-on-LAN
