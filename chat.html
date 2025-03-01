@@ -87,8 +87,8 @@ Load - Load command request the UE master machine to load a specific chapter.
 // 
 // Data that may need to be changed:
 id="1";
-defaultWebSockServer="169.254.112.200";
-//defaultWebSockServer="127.0.0.1";
+//defaultWebSockServer="169.254.112.200";
+defaultWebSockServer="127.0.0.1";
 //defaultWebSockServer="192.168.109.225";
 ip.value = defaultWebSockServer;
 console.log("ip is "+ ip.value);
@@ -145,10 +145,12 @@ function start()
     cmd = JSON.stringify(d);
     console.log("sending "+cmd);
     socket.send(cmd);
+    // hmmmm......
+    //system_cmd("start","cmd /k c:\\users\\admin\\"Run MoH\"\\Run_MoH.bat");
 }
 function stop()
 {
-    system_cmd("stop","echo \"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\" >> /tmp/log");
+    //system_cmd("stop","cmd /k c:\\users\\admin\\"Run MoH\"\\Run_MoH.bat");
 }
 
 function resume()
@@ -158,6 +160,7 @@ function resume()
 function shutdown()
 {
     simple_cmd("shutdown");
+    system_cmd("stop","echo \"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\" >> /tmp/log");
 }
 function status()
 {
@@ -241,4 +244,32 @@ function new_pod()
     console.log("pod number has changed");
     id = document.getElementById("pod").value;
 }
+
+let connections = [];
+
+function createConnection(url) {
+  const ws = new WebSocket(url);
+
+  ws.onopen = () => {
+    console.log(`Connected to ${url}`);
+  };
+
+  ws.onmessage = (event) => {
+    console.log(`Received message from ${url}: ${event.data}`);
+  };
+
+  ws.onclose = () => {
+    console.log(`Disconnected from ${url}`);
+    // Remove the closed connection from the array
+    connections = connections.filter(conn => conn !== ws);
+  };
+
+  ws.onerror = (error) => {
+    console.error(`Error in connection ${url}: ${error}`);
+  };
+
+  connections.push(ws);
+  return ws;
+}
+
 </script>

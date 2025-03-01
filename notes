@@ -4,17 +4,27 @@ wol is the wakeonlan program
 
 https://wiki.archlinux.org/title/Wake-on-LAN
 
+wol -v -b 169.254.112.200 d8:43:ae:1e:3a:54
+wol -v -b 169.254.112.200 04:7c:16:72:93:c2
+wol -v -b 169.254.112.200 6c:6e:07:13:59:81
+wol -v -b 169.254.112.200 c8:b3:73:23:6f:ea
 possible mac addresses
   04:7c:16:72:93:c2
   d8:43:ae:1e:3a:5f
   6c:6e:07:13:59:81
-  d8:43:ae:1e:3a:54
   c8:b3:73:23:6f:ea
 
 systemctl --user status broadcast
 g++ -o broadcast_server broadcast_server.cpp -I./
+g++ -o broadcast_server broadcast_server.cpp -I./ -I./asio-1.30.2/include
+
 
 // this one works
+
+ 1441  winexe -U ADMIN%1234 //169.254.112.122  'cmd /c C:\Users\admin\Desktop\\\"Run MoH\"\\Run_MoH.bat'
+ 1442  winexe -U ADMIN%1234 //169.254.112.122  'cmd /c C:\Users\admin\Desktop\\\"Run MoH\"\\Stop_MoH.bat'
+
+// yes, really.  look above
 winexe -U ADMIN%1234 //169.254.112.122 'cmd /k C:\Users\admin\Desktop\"Run MoH"\Stop_MoH.bat'
 
 winexe -U ADMIN%1234 //169.254.112.122 'cmd /c dir c:\users\admin\Desktop\"Run MoH"
@@ -57,3 +67,9 @@ each pod will reply with a status message (defined below)
 //              until the experience is over
 // status:  array of strings, Copilot, Medic, Crew Chief.  Can be free 
 //          form.  "" means things are fine.
+
+
+
+https://learn.microsoft.com/en-us/troubleshoot/windows-server/user-profiles-and-logon/turn-on-automatic-logon
+followed these instructions for login
+
