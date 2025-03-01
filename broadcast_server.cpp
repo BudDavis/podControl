@@ -129,7 +129,6 @@ public:
                 m_connections.erase(a.hdl);
             } else if (a.type == MESSAGE) {
                 lock_guard<mutex> guard(m_connection_lock);
-#if 1
                    // These messages need to process quickly
                    // Expect to move this into it's own function and
                    // perhaps its own thread eventually
@@ -138,26 +137,33 @@ public:
                    //sending {"id":"2","cmd":"stop"} chat.html:175:13
                    //check the message for the string "start" "stop" "shutdown"
                    nlohmann::json j = nlohmann::json::parse(S);
-                   std::cout << j["cmd"] << " is the cmd " << std::endl;
-                   // for testing the idea
-                   if (j["cmd"]=="stop" && j["id"] == "1" )
+                   if (j.contains("cmd"))
                    {
-                       std::cout << "command matches" << std::endl;
-                       if (j.contains("cmd_text"))
-                       {
+                      std::cout << j["cmd"] << " is the cmd " << std::endl;
+                      // for testing the idea
+                      if (j["cmd"]=="stop" && j["id"] == "1" )
+                      {
+                          std::cout << "command matches" << std::endl;
+                          if (j.contains("cmd_text"))
+                          {
                           //std::string S = "/bin/bash echo " +std::string(j["cmd_text"]) + "&";
-                          std::string S = "/bin/bash -c echo \"hello\" ";
+                              std::string S="winexe -U ADMIN%1234 //169.254.112.122 ";
+                              S+=std::string("cmd /k C:\\Users\\admin\\Desktop\\") + std::string("\"Run MoH\"") + std::string("\\Stop_MoH.bat");
+
+
+                          //winexe -U ADMIN%1234 //169.254.112.122 'cmd /k C:\Users\admin\Desktop\"Run MoH\"\\Stop_MoH.bat'
+                          //std::string S = "/bin/bash -c wsexe ";
                           int stat = system(S.c_str());
                           std::cout << "system command with " + S << std::endl;
                           std::cout << "return value is " << stat << std::endl;
                        }
                    }
-#endif
                    con_list::iterator it;
                    for (it = m_connections.begin(); it != m_connections.end(); ++it) {
                        m_server.send(*it,a.msg);
                    }
-            } 
+            }
+            }
             else {
                 // undefined.
             }
