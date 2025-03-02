@@ -153,9 +153,12 @@ public:
                        {
                           if (j.contains("cmd_text"))
                           {
-                               std::string S = j["cmd_text"];
-                               std::cout << "the system command is " << S << std::endl;
-                               system(S.c_str());
+                              // code HERE ....
+                          //std::string S = "/bin/bash echo " +std::string(j["cmd_text"]) + "&";
+                              std::string S = j["cmd_text"];
+                              std::cout << "the system command is " << S << std::endl;
+                              system(S.c_str());
+
                            } // valid cmd_text
                        }
                        else

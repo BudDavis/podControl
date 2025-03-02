@@ -1,7 +1,7 @@
 <html>
     <p>
        <input type="text" id="ip"></input>
-       <button type=button onclick="new_connection()">New Connection</button>
+       <button id="newConnection" type=button onclick="new_connection()">New Connection</button>
        <input type="text" id="pod" value="1"></input>
        <button type=button onclick="new_pod()">New Pod</button>
     </p>
@@ -87,14 +87,18 @@ Load - Load command request the UE master machine to load a specific chapter.
 // 
 // Data that may need to be changed:
 id="1";
-//defaultWebSockServer="169.254.112.200";
-defaultWebSockServer="127.0.0.1";
+defaultWebSockServer="169.254.112.122";
+//defaultWebSockServer="127.0.0.1";
 //defaultWebSockServer="192.168.109.225";
 ip.value = defaultWebSockServer;
 console.log("ip is "+ ip.value);
 socket = null;
+
+newConnectionButton=document.getElementById("newConnection");
+newConnectionButton.innerText="not connected";
 new_connection(); //socket = new WebSocket("ws://"+ip+":9000");
-podMac = [[1,2,3],[1,2,3]];
+
+
 /////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////
 // These commands are special.  They go out on the unix
@@ -104,22 +108,24 @@ class systemCmd {
 };
 /////////////////////////////////////////////////////////////////
 
-socket.onopen = function(e) {
-    console.log("open");
+function onopen_(e) {
+    console.log("open callback");
+    newConnectionButton.innerText="connected";
 };
 
-socket.onerror = function(e) {
+function onerror_(e) {
     console.log("websocket error");
 };
 
-socket.onmessage = function(event) {
+function onmessage_(event) {
     console.log("got a message " + event.data);
     textbox=document.getElementById("output");
     textbox.value = event.data + '\n' + textbox.value;
 };
 
-socket.onclose = function(event) {
-    console.log("on close");
+function onclose_(event) {
+    console.log("got close message");
+    newConnectionButton.innerText="not connected";
 };
 
 function send() {
@@ -146,11 +152,14 @@ function start()
     console.log("sending "+cmd);
     socket.send(cmd);
     // hmmmm......
-    //system_cmd("start","cmd /k c:\\users\\admin\\"Run MoH\"\\Run_MoH.bat");
+    //system_cmd("start","cmd /c c:\\users\\admin\\Desktop\\\"Run MoH\"\\Run_MoH.bat");
+    system_cmd("start","cmd /c Run_MoH.bat");
 }
 function stop()
 {
-    //system_cmd("stop","cmd /k c:\\users\\admin\\"Run MoH\"\\Run_MoH.bat");
+    //system_cmd("stop","cmd /c c:\\users\\admin\\Desktop\\\"Run MoH\"\\Stop_MoH.bat");
+    //system_cmd("stop","cmd /c cd c:\\users\\admin\\Desktop\\\"Run MoH\"&&Stop_MoH.bat");
+    system_cmd("stop","cmd /c Stop_MoH.bat");
 }
 
 function resume()
@@ -166,17 +175,21 @@ function status()
 {
     simple_cmd("status");
 }
-function system_cmd(a,b)
+function system_cmd(cmd,cmd_text,cmd_dir)
 {
     class Cmd {
         id;
         cmd;
         cmd_text;
+        cmd_dir;
+        pod;
     } 
     d = new Cmd();
     d.id = id;
-    d.cmd = a;
-    d.cmd_text = b;
+    d.cmd = cmd;
+    d.cmd_text = cmd_text;
+    d.pod = id;
+    d.cmd_dir = cmd_dir;
     cmd = JSON.stringify(d);
     console.log("sending "+cmd);
     socket.send(cmd);
@@ -232,12 +245,25 @@ function load(a)
 
 function new_connection()
 {
-    ip = document.getElementById("ip").value;
-    console.log("ws://"+ip+":9000");
-    console.log("socket is " + socket);
-    socket = new WebSocket("ws://"+ip+":9000");
-    textbox=document.getElementById("output");
-    textbox.value = "";
+    console.log("calling new connection ["+newConnectionButton.innerText+"]");
+    if (newConnectionButton.innerText=="connected")
+    {
+        newConnectionButton.innerText="close in progress";
+        socket.close();
+    }
+    else if (newConnectionButton.innerText=="not connected")
+    {
+        ip = document.getElementById("ip").value;
+        console.log("ws://"+ip+":9000");
+        socket = new WebSocket("ws://"+ip+":9000");
+        newConnectionButton.innerText="connection in progress";
+        socket.onopen=onopen_;
+        socket.close=onclose_;
+        socket.onerror=onerror_;
+        socket.onmessage=onmessage_;
+        textbox=document.getElementById("output");
+        textbox.value = "";
+    }
 }
 function new_pod()
 {
