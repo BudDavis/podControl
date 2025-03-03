@@ -8,6 +8,9 @@
     <p>
         <textarea type="textarea" id="output"cols=60 rows=10 ></textarea>
     </p>
+    <p>
+    <label id="podState"></label>
+    </p>
     <p> 
        <input type="text" id="input"> </input>
        <button type=button onclick="send()">Send </button>
@@ -26,6 +29,10 @@
        <button type=button onclick="shutdown()">Shutdown </button>
        <button type=button onclick="status()">Status </button>
     </p>
+<p>
+send fake status to debug page
+    <button type=button onclick="fake_status()">Send Fake Status </button>
+</p>
 <p>
     <list>
        <li>
@@ -87,16 +94,18 @@ Load - Load command request the UE master machine to load a specific chapter.
 // 
 // Data that may need to be changed:
 id="1";
-defaultWebSockServer="169.254.112.122";
-//defaultWebSockServer="127.0.0.1";
-//defaultWebSockServer="192.168.109.225";
+
+
+defaultWebSockServer="127.0.0.1";
+
+
 ip.value = defaultWebSockServer;
 console.log("ip is "+ ip.value);
 socket = null;
 
 newConnectionButton=document.getElementById("newConnection");
 newConnectionButton.innerText="not connected";
-new_connection(); //socket = new WebSocket("ws://"+ip+":9000");
+new_connection();
 
 
 /////////////////////////////////////////////////////////////////
@@ -106,6 +115,17 @@ new_connection(); //socket = new WebSocket("ws://"+ip+":9000");
 class systemCmd {
     cmd;
 };
+      class statusCmd {
+        state;
+          chapter;
+          pod_status;
+          elapsed_time;
+          remaining_time;
+          num_players;
+          status;
+          id;       // the pod 1 to 3
+          computer; // the computer 1 to 3 
+     }
 /////////////////////////////////////////////////////////////////
 
 function onopen_(e) {
@@ -121,6 +141,12 @@ function onmessage_(event) {
     console.log("got a message " + event.data);
     textbox=document.getElementById("output");
     textbox.value = event.data + '\n' + textbox.value;
+    // now for specific processing
+    if (event.data.includes("state")) {
+        let m = JSON.parse(event.data);
+        let podState=document.getElementById("podState");
+        podState.innerText="pod #" + m.id + " computer # "+m.computer+" state "+m.state+" chapter "+m.chapter+" time "+m.elapsed_time+"/"+m.remaining_time+" players "+m.players+" " + m.pod_status; 
+    }
 };
 
 function onclose_(event) {
@@ -298,4 +324,37 @@ function createConnection(url) {
   return ws;
 }
 
+function fake_status()
+{
+//    {"state":"RUNNING","chapter":"Fog","pod_status":"GREEN",
+//  "elapsed_time":"00:01","remaining_time"="02:12",
+//  "num_players":3,"status":["good","not turned on","whatever"],
+//
+// state can be "IDLE" "RUNNING" "PAUSED "ERROR"
+// chapter is the current chapter
+// pod_status can be RED or YELLOW or GREEN. Overall status of all
+// machines in the 'pod'. integer 1,2,3
+// elapsed time is a string, minutes ":" seconds, showing how
+//              far into the experience
+// remaining_time is a string, minute ":" seconds, showing time
+//              until the experience is over
+// status:  array of strings, Copilot, Medic, Crew Chief.  Can be free
+//          form.  "" means things are fine.
+
+    // 3 machines
+     d = new statusCmd();
+     d.state="RUNNING";
+     d.chapter="Fog";
+     d.pod_status=["RED","RED","RED"];
+     d.elapsed_time="00:00:00";
+     d.remaining_time="00:00:00";
+     d.num_players=3;
+     d.id = id;
+     d.computer = 1;
+     cmd = JSON.stringify(d);
+     console.log("sending "+cmd);
+     socket.send(cmd);
+
+    console.log("sending fake status");
+}
 </script>

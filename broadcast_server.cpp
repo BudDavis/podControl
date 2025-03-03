@@ -5,6 +5,7 @@
 
 #include <websocketpp/server.hpp>
 
+#include <fstream>
 #include <iostream>
 #include <set>
 
@@ -37,7 +38,7 @@ using websocketpp::lib::condition_variable;
 
 // to come in from the environment
 std::string iAmPod = "1";
-std::string iAmA = "copilot";
+//std::string iAmA = "copilot";
 
 enum action_type {
     SUBSCRIBE,
@@ -55,6 +56,7 @@ struct action {
     server::message_ptr msg;
 };
 
+
 class broadcast_server {
 public:
     broadcast_server() {
@@ -65,6 +67,10 @@ public:
         m_server.set_open_handler(bind(&broadcast_server::on_open,this,::_1));
         m_server.set_close_handler(bind(&broadcast_server::on_close,this,::_1));
         m_server.set_message_handler(bind(&broadcast_server::on_message,this,::_1,::_2));
+        m_server.set_http_handler(bind(&broadcast_server::on_http,this,::_1));
+
+        //echo_server.set_http_handler(bind(&on_http,&echo_server,::_1));
+
     }
 
     void run(uint16_t port) {
@@ -80,6 +86,53 @@ public:
         } catch (const std::exception & e) {
             std::cout << e.what() << std::endl;
         }
+    }
+
+    void on_http(connection_hdl hdl) {
+        // Upgrade our connection handle to a full connection_ptr
+        server::connection_ptr con = m_server.get_con_from_hdl(hdl);
+    
+        std::ifstream file;
+        std::string filename = con->get_resource();
+        std::string response;
+        std::string m_docroot = ""; 
+        m_server.get_alog().write(websocketpp::log::alevel::app,
+            "http request1: "+filename);
+    
+        if (filename == "/") {
+            filename = m_docroot+"index.html";
+        } else {
+            filename = m_docroot+filename.substr(1);
+        }
+        
+        m_server.get_alog().write(websocketpp::log::alevel::app,
+            "http request2: "+filename);
+    
+        file.open(filename.c_str(), std::ios::in);
+        if (!file) {
+            // 404 error
+            std::stringstream ss;
+        
+            ss << "<!doctype html><html><head>"
+               << "<title>Error 404 (Resource not found)</title><body>"
+               << "<h1>Error 404</h1>"
+               << "<p>The requested URL " << filename << " was not found on this server.</p>"
+               << "</body></head></html>";
+        
+            con->set_body(ss.str());
+            con->set_status(websocketpp::http::status_code::not_found);
+            return;
+        }
+    
+        file.seekg(0, std::ios::end);
+        response.reserve(file.tellg());
+        file.seekg(0, std::ios::beg);
+    
+        response.assign((std::istreambuf_iterator<char>(file)),
+                        std::istreambuf_iterator<char>());
+    
+        con->set_body(response);
+        con->set_status(websocketpp::http::status_code::ok);
     }
 
     void on_open(connection_hdl hdl) {
@@ -190,14 +243,31 @@ private:
 };
 
 int main(int argc,char* argv[]) {
+
+    std::string myPod = "1";
+    std::string myComputer="1";
+
+    std::cout << "This is the podControl program" << std::endl;
+    std::cout << "     it takes two arguments, the pod and the computer" << std::endl;
+    std::cout << "     podControl 1  1" << std::endl;
+    std::cout << std::endl;
+    std::cout << "     each argument is a number between 1 and 3." << std::endl;
+    std::cout << "     1 == medic   2 == crewchief 3 == copilot" << std::endl;
+    std::cout << "--------------------------------------------------------" << std::endl;
     // read cmd arguments
-#if 0
-    if (argc>0)
+    if (argc==3)
     {
-        std::cout << argv[0] << "  " << argv[1] << std::endl;
+        myPod=std::string(argv[1]);
+        myComputer=std::string(argv[2]);
     }
-    std::string pod;
-#endif
+    else
+    {
+        std::cout << "either not enough or too many arguments" << std::endl;
+        return 1;
+    }
+
+    std::cout << "pod = " << myPod << " computer = " << myComputer << std::endl;
+
     try {
     broadcast_server server_instance;
 
