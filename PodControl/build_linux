@@ -1,0 +1,1 @@
+g++ podControl.cpp -I./ -I ./asio-1.30.2/include/ -o podcontrol
