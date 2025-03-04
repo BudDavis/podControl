@@ -94,14 +94,17 @@ Load - Load command request the UE master machine to load a specific chapter.
 // 
 // Data that may need to be changed:
 id="1";
+serNo=1;
 
 
-defaultWebSockServer="127.0.0.1";
+defaultWebSockServer="169.254.112.122";
 
 
 ip.value = defaultWebSockServer;
 console.log("ip is "+ ip.value);
 socket = null;
+now=new Date();
+readTimeStamp = now.getTime();
 
 newConnectionButton=document.getElementById("newConnection");
 newConnectionButton.innerText="not connected";
@@ -140,7 +143,9 @@ function onerror_(e) {
 function onmessage_(event) {
     console.log("got a message " + event.data);
     textbox=document.getElementById("output");
-    textbox.value = event.data + '\n' + textbox.value;
+    textbox.value = event.data+ '\n' + textbox.value;
+    now=new Date();
+    readTimeStamp = now.getTime();
     // now for specific processing
     if (event.data.includes("state")) {
         let m = JSON.parse(event.data);
@@ -194,8 +199,7 @@ function resume()
 }
 function shutdown()
 {
-    simple_cmd("shutdown");
-    system_cmd("stop","echo \"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\" >> /tmp/log");
+     system_cmd("stop","cmd /c Run_Shutdown.bat");
 }
 function status()
 {
@@ -227,10 +231,14 @@ function simple_cmd(a) {
     class simpleCmd {
         id;
         cmd;
+        serno;
     } 
+    serNo++;
+  
     d = new simpleCmd();
     d.id = id;
     d.cmd = a;
+    d.serno=serNo;
     cmd = JSON.stringify(d);
     console.log("sending "+cmd);
     socket.send(cmd);
@@ -357,4 +365,19 @@ function fake_status()
 
     console.log("sending fake status");
 }
+function timerFunc (){
+    status();
+    now = new Date().getTime();
+    dt = (now-readTimeStamp)/1000;
+    console.log("dt is "+dt);
+    if ( ( dt>4) )
+    {
+         //console.log("missing input");
+         //socket.close();
+         //newConnectionButton.innerText=="not connected";
+    }
+
+}
+
+setInterval(timerFunc,5000);
 </script>
