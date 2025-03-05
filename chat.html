@@ -1,8 +1,9 @@
 <html>
+<h2> Connection</h2>
     <p>
        <input type="text" id="ip"></input>
        <button id="newConnection" type=button onclick="new_connection()">New Connection</button>
-       <input type="text" id="pod" value="1"></input>
+       <input type="text" id="pod" value="1" size=2></input>
        <button type=button onclick="new_pod()">New Pod</button>
     </p>
     <p>
@@ -17,23 +18,27 @@
     </p>
     <p>
     </p>
-    <p>
+    
+<h2>Computer Control</h2>
        <button type=button onclick="poweron()">Power On</button> 
-       <button type=button onclick="start()">Start </button> 
-       <input type="text" id="players" value=1></input>
-</p>
+       <button type=button onclick="shutdown()">Shutdown </button>
+ 
 <p>
-       <button type=button onclick="stop()">Stop </button>
+<h2>Experience</h2>
+        
+       <button type=button onclick="start()">Start </button> 
+       <input type="text" id="players" value=3 size=1></input>
+ 
+    
        <button type=button onclick="pause()">Pause </button>
        <button type=button onclick="resume()">Resume </button>
-       <button type=button onclick="shutdown()">Shutdown </button>
+       
        <button type=button onclick="status()">Status </button>
+       <button type=button onclick="stop()">Stop </button>
     </p>
+ 
 <p>
-send fake status to debug page
-    <button type=button onclick="fake_status()">Send Fake Status </button>
-</p>
-<p>
+<h2>Scenario Control</h2>
     <list>
        <li>
        <button type=button onclick="load(0)">Load Chapter - Orientation</button>
@@ -61,43 +66,28 @@ send fake status to debug page
        </li>
     </list>
     </p>
-    <p>
-<h2>Info</h2>
-<list>
-<li>
-Start - Starts the UE program on up to 3 machines in the pod.  Needs to have the number of machines (1,2,3)
-</li>
-<li>
-Stop - Stops the UE program on all machines in the pod.
-</li>
-<li>
-Pause - Pauses the exection of the experience (UE5 internal)
-</li>
-<li>
-Resume - Resumes the execution of the experience after it has been paused (UE5 internal)
-</li>
-<li>
-Power Off - Powers off the computer (Windows Script)
-</li>
-<li>
-Status - Request status (UE5 internal)
-</li>
-<li>
-Load - Load command request the UE master machine to load a specific chapter.
-</li>
-</list>
-    </p>
+  
+ 
 </html>
 
 <script>
 /////////////////////////////////////////////////////////////////
 // 
-// Data that may need to be changed:
+//
+// Variables with global scope
+//
+
 id="1";
 serNo=1;
 
+//
+/////////////////////////////////////////////////////////////////
+// Data that may need to be changed:
 
 defaultWebSockServer="169.254.112.122";
+
+//
+/////////////////////////////////////////////////////////////////
 
 
 ip.value = defaultWebSockServer;
@@ -115,6 +105,7 @@ new_connection();
 /////////////////////////////////////////////////////////////////
 // These commands are special.  They go out on the unix
 // machine that copies out the websockets to all of the clients
+
 class systemCmd {
     cmd;
 };
@@ -179,12 +170,10 @@ function start()
     d.id = id;
     d.cmd = "start";
     d.players = document.getElementById("players").value;
-    cmd = JSON.stringify(d);
-    console.log("sending "+cmd);
-    socket.send(cmd);
-    // hmmmm......
-    //system_cmd("start","cmd /c c:\\users\\admin\\Desktop\\\"Run MoH\"\\Run_MoH.bat");
-    system_cmd("start","cmd /c Run_MoH.bat");
+   
+    
+    cmd = "cmd /c Run_MoH.bat "+ d.players;
+    system_cmd("start",cmd);
 }
 function stop()
 {
@@ -367,17 +356,8 @@ function fake_status()
 }
 function timerFunc (){
     status();
-    now = new Date().getTime();
-    dt = (now-readTimeStamp)/1000;
-    console.log("dt is "+dt);
-    if ( ( dt>4) )
-    {
-         //console.log("missing input");
-         //socket.close();
-         //newConnectionButton.innerText=="not connected";
-    }
 
 }
 
-setInterval(timerFunc,5000);
+setInterval(timerFunc,60000);
 </script>
