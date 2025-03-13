@@ -35,6 +35,7 @@ using websocketpp::lib::unique_lock;
 
 // to come in from the environment
 std::string iAmPod = "1";
+std::string m_docroot = "PodControl/";
 
 enum action_type
 {
@@ -98,7 +99,7 @@ public:
         std::ifstream file;
         std::string filename = con->get_resource();
         std::string response;
-        std::string m_docroot = "PodControl/";
+        //std::string m_docroot = "PodControl/";
         m_server.get_alog().write(websocketpp::log::alevel::app,
                                   "http request1: " + filename);
 
@@ -271,17 +272,18 @@ int main(int argc, char *argv[])
     std::string myComputer = "1";
 
     std::cout << "This is the podControl program" << std::endl;
-    std::cout << "     it takes two arguments, the pod and the computer" << std::endl;
-    std::cout << "     podControl 1  1" << std::endl;
+    std::cout << "     it takes three arguments, the pod, the computer and the html root" << std::endl;
+    std::cout << "     podControl 1  1 ./PodControl " << std::endl;
     std::cout << std::endl;
     std::cout << "     each argument is a number between 1 and 3." << std::endl;
     std::cout << "     1 == medic   2 == crewchief 3 == copilot" << std::endl;
     std::cout << "--------------------------------------------------------" << std::endl;
     // read cmd arguments
-    if (argc == 3)
+    if (argc == 4)
     {
         myPod = std::string(argv[1]);
         myComputer = std::string(argv[2]);
+        m_docroot = std::string(argv[3]);
     }
     else
     {
