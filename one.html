@@ -1,0 +1,319 @@
+<html>
+
+
+<h2>Computer Control</h2>
+<button type=button onclick="poweron()">Power On</button>
+<button type=button onclick="shutdown()">Shutdown </button>
+
+<p>
+<h2>Experience Control</h2>
+<p>
+    <label id="podState"></label>
+</p>
+<p>
+    <button style="background-color:white; 
+        color: white;   id=" copilotStatus">
+        Co-Pilot
+    </button>
+    <button style="background-color: white;
+        color: white;  id=" medicStatus">
+        Medic
+    </button>
+    <button style="background-color: white;
+        color: white;  id=" crewchiefStatus">
+        Crew Chief
+    </button>
+</p>
+Number of Players
+<input type="text" id="players" value=3 size=1></input>
+<button type=button onclick="start()">Start </button>
+</p>
+<p>
+
+    <button type=button onclick="load()">Load Chapter </button>
+    <select name="chapter" id="chapter">
+        <option value=0 selected>Orientation</option>
+        <option value=1>Intro</option>
+        <option value=2>Hoist</option>
+        <option value=3>Fog</option>
+        <option value=4>Minefield</option>
+        <option value=5>Hard Landing</option>
+        <option value=6>Soft Landing</option>
+        <option value=7>Epilogue</option>
+    </select>
+
+    <button type=button onclick="pause()">Pause </button>
+    <button type=button onclick="resume()">Resume </button>
+
+    <button type=button onclick="status()">Status </button>
+    <button type=button onclick="stop()">Stop </button>
+</p>
+
+<h2> Connection</h2>
+<p>
+    <input type="text" id="ip"></input>
+    <button id="newConnection" type=button onclick="new_connection()">New Connection</button>
+    <input type="text" id="pod" value="1" size=2></input>
+    <button type=button onclick="new_pod()">New Pod</button>
+</p>
+<p>
+    <textarea type="textarea" id="output" cols=30 rows=10></textarea>
+</p>
+<p>
+</p>
+
+</html>
+
+<script>
+    /////////////////////////////////////////////////////////////////
+    // 
+    //
+    // Variables with global scope
+    //
+
+    id = "1";
+    serNo = 1;
+
+    //
+    /////////////////////////////////////////////////////////////////
+    // Data that may need to be changed:
+
+    //defaultWebSockServer = "169.254.112.122";
+    defaultWebSocketServer = window.location.hostname;
+    //defaultWebSockServer = "127.0.0.1";
+
+    //
+    /////////////////////////////////////////////////////////////////
+
+
+    ip.value = defaultWebSockServer;
+    console.log("ip is " + ip.value);
+    socket = null;
+    now = new Date();
+    readTimeStamp = now.getTime();
+
+    newConnectionButton = document.getElementById("newConnection");
+    newConnectionButton.innerText = "not connected";
+    new_connection();
+
+
+    /////////////////////////////////////////////////////////////////
+    /////////////////////////////////////////////////////////////////
+    // These commands are special.  They go out on the unix
+    // machine that copies out the websockets to all of the clients
+
+    class systemCmd {
+        cmd;
+    };
+     
+    class statusCmd {
+        Pod;
+        State;
+        Chapter;
+        //Mode;
+        //"Elapsed Time";
+        //"Remaining Time";
+    }
+    /////////////////////////////////////////////////////////////////
+
+    function onopen_(e) {
+        console.log("open callback");
+        newConnectionButton.innerText = "connected";
+    };
+
+    function onerror_(e) {
+        console.log("websocket error");
+    };
+
+    function onmessage_(event) {
+        console.log("got a message " + event.data);
+        textbox = document.getElementById("output");
+        textbox.value = event.data + '\n' + textbox.value;
+        now = new Date();
+        readTimeStamp = now.getTime();
+        // now for specific processing
+        if (event.data.includes("State")) {
+            let m = JSON.parse(event.data);
+            let podState = document.getElementById("podState");
+            podState.innerText = "pod #" + m.Pod + " Chapter [" + m.Chapter + "]  ";
+            cps = document.getElementById("copilotStatus");
+            cps.style.color = m.Mode[0];
+            ms = document.getElementById("medicStatus");
+            ms.style.color = m.Mode[1];
+            ccs = document.getElementById("crewchiefStatus");
+            ccs.style.color = m.Mode[2];
+        }
+    };
+
+    function onclose_(event) {
+        console.log("got close message");
+        newConnectionButton.innerText = "not connected";
+    };
+
+    function send() {
+        console.log("send button");
+        textbox = document.getElementById("input");
+        socket.send(textbox.value);
+    }
+    function pause() {
+        simple_cmd("pause");
+    }
+    function start() {
+        class complexCmd {
+            id;
+            cmd;
+            players;
+        };
+        d = new complexCmd();
+        d.id = id;
+        d.cmd = "start";
+        d.players = document.getElementById("players").value;
+
+
+        cmd = "cmd /c Run_MoH.bat " + d.players;
+        system_cmd("start", cmd);
+    }
+
+    function stop() {
+        system_cmd("stop", "cmd /c Stop_MoH.bat");
+    }
+
+    function resume() {
+        simple_cmd("resume");
+    }
+
+    function shutdown() {
+        system_cmd("stop", "cmd /c Run_Shutdown.bat");
+    }
+
+    function status() {
+        simple_cmd("status");
+    }
+
+    function system_cmd(cmd, cmd_text, cmd_dir) {
+        class Cmd {
+            id;
+            cmd;
+            cmd_text;
+            cmd_dir;
+            pod;
+        }
+        d = new Cmd();
+        d.id = id;
+        d.cmd = cmd;
+        d.cmd_text = cmd_text;
+        d.pod = id;
+        d.cmd_dir = cmd_dir;
+        cmd = JSON.stringify(d);
+        console.log("sending " + cmd);
+        socket.send(cmd);
+    }
+
+    function simple_cmd(a) {
+        class simpleCmd {
+            id;
+            cmd;
+            serno;
+        }
+        serNo++;
+
+        d = new simpleCmd();
+        d.id = id;
+        d.cmd = a;
+        d.serno = serNo;
+        cmd = JSON.stringify(d);
+        console.log("sending " + cmd);
+        socket.send(cmd);
+    }
+    function poweron() {
+        // for power on, we send out a command to send a wol string for 
+        // each machine in the pod
+        d = new systemCmd();
+        d.cmd = "wol + 00:00:00:00:";
+        cmd = JSON.stringify(d);
+        console.log("sending " + cmd);
+        socket.send(cmd);
+    }
+
+    function load() {
+        const title = ["Orientation", "Intro",
+            "Hoist", "Fog",
+            "Minefield",
+            "Hard Landing",
+            "Soft Landing",
+            "Epilogue"];
+
+        class loadCmd {
+            cmd;
+            chapter;
+            id;
+        }
+        ch = document.getElementById("chapter");
+        a = ch.value;
+        d = new loadCmd();
+        d.cmd = "load";
+        d.chapter = title[a];
+        d.id = id;
+        cmd = JSON.stringify(d);
+        console.log("sending " + cmd);
+        socket.send(cmd);
+    }
+
+    function new_connection() {
+        console.log("calling new connection [" + newConnectionButton.innerText + "]");
+        if (newConnectionButton.innerText == "connected") {
+            newConnectionButton.innerText = "close in progress";
+            socket.close();
+        }
+        else if (newConnectionButton.innerText == "not connected") {
+            ip = document.getElementById("ip").value;
+            console.log("ws://" + ip + ":9000");
+            socket = new WebSocket("ws://" + ip + ":9000");
+            newConnectionButton.innerText = "connection in progress";
+            socket.onopen = onopen_;
+            socket.close = onclose_;
+            socket.onerror = onerror_;
+            socket.onmessage = onmessage_;
+            textbox = document.getElementById("output");
+            textbox.value = "";
+        }
+    }
+    function new_pod() {
+        console.log("pod number has changed");
+        id = document.getElementById("pod").value;
+    }
+
+    let connections = [];
+
+    function createConnection(url) {
+        const ws = new WebSocket(url);
+
+        ws.onopen = () => {
+            console.log(`Connected to ${url}`);
+        };
+
+        ws.onmessage = (event) => {
+            console.log(`Received message from ${url}: ${event.data}`);
+        };
+
+        ws.onclose = () => {
+            console.log(`Disconnected from ${url}`);
+            // Remove the closed connection from the array
+            connections = connections.filter(conn => conn !== ws);
+        };
+
+        ws.onerror = (error) => {
+            console.error(`Error in connection ${url}: ${error}`);
+        };
+
+        connections.push(ws);
+        return ws;
+    }
+
+    function timerFunc() {
+        status();
+    }
+
+    setInterval(timerFunc, 60000);
+
+</script>
