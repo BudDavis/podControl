@@ -79,14 +79,14 @@ Number of Players
     // Data that may need to be changed:
 
     //defaultWebSockServer = "169.254.112.122";
-    defaultWebSocketServer = window.location.hostname;
+    //defaultWebSocketServer = window.location.hostname;
     //defaultWebSockServer = "127.0.0.1";
 
     //
     /////////////////////////////////////////////////////////////////
 
 
-    ip.value = defaultWebSockServer;
+    ip.value = window.location.hostname;
     console.log("ip is " + ip.value);
     socket = null;
     now = new Date();
@@ -314,6 +314,6 @@ Number of Players
         status();
     }
 
-    setInterval(timerFunc, 60000);
+    setInterval(timerFunc, 1000);
 
 </script>

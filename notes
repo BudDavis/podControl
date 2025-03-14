@@ -1,3 +1,19 @@
+Rack 1 VR1A   169.254.112.13  60:cf:84:7d:a9:94
+       VR1B   169.254.112.21  bc:fc:e7:1a:8e:da
+       VR1C   169.254.112.22  bc:fc:e7:1a:8e:a0
+Rack 2 VR2A   169.254.112.14
+       VR2B   169.254.112.31
+       VR2C   169.254.112.32
+Rack 3 VR3A   169.254.112.15
+       VR3B   169.254.112.41
+       VR3C   169.254.112.42
+
+ 
+
+
+
+
+
 sudo cp chat.html /usr/share/nginx/html
 
 wol is the wakeonlan program

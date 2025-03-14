@@ -7,8 +7,37 @@
 
 <p>
 <h2>Experience Control</h2>
+<p>
+    <label id="podState"></label>
+</p>
+<p>
+<button style=
+        "background-color: white; 
+        color: white;" onclick="xxx(this)"
+        id="copilotStatus">
+        Co-Pilot
+    </button>
+    <button style=
+        "background-color: white;
+        color: white;" onclick="xxx(this)"
+        id="medicStatus">
+        Medic
+    </button>
+    <button style=
+        "background-color: white;
+        color: white;" onclick="xxx(this)"
+        id="crewchiefStatus">
+        Crew Chief
+    </button>
+</p>
+Number of Players
+<input type="text" id="players" value=3 size=1></input>
+<button type=button onclick="start()">Start </button>
+</p>
+<p>
 
-<select name="chapter">
+<button type=button onclick="load()">Load Chapter </button>
+<select name="chapter" id="chapter">
     <option value=0 selected>Orientation</option>
     <option value=1>Intro</option>
     <option value=2>Hoist</option>
@@ -18,13 +47,7 @@
     <option value=6>Soft Landing</option>
     <option value=7>Epilogue</option>
 </select>
-
-
-Number of Players
-<input type="text" id="players" value=3 size=1></input>
-<button type=button onclick="start()">Start </button>
-</p>
-<p>
+    
     <button type=button onclick="pause()">Pause </button>
     <button type=button onclick="resume()">Resume </button>
 
@@ -45,10 +68,6 @@ Number of Players
     <textarea type="textarea" id="output" cols=30 rows=10></textarea>
 </p>
 <p>
-    <label id="podState"></label>
-</p>
-
-<p>
 </p>
 
 </html>
@@ -67,8 +86,8 @@ Number of Players
     /////////////////////////////////////////////////////////////////
     // Data that may need to be changed:
 
-    //defaultWebSockServer = "169.254.112.122";
-    defaultWebSockServer = "127.0.0.1";
+    defaultWebSockServer = "169.254.112.122";
+    //defaultWebSockServer = "127.0.0.1";
 
     //
     /////////////////////////////////////////////////////////////////
@@ -93,16 +112,14 @@ Number of Players
     class systemCmd {
         cmd;
     };
+    // {"State":"RUNNING","Pod":1,"Chapter":"Epilogue","Mode":["RED","RED","RED"],"Elapsed Time:":"295s","Remaining Time:":"0s"}
     class statusCmd {
-        state;
-        chapter;
-        pod_status;
-        elapsed_time;
-        remaining_time;
-        num_players;
-        status;
-        id;       // the pod 1 to 3
-        computer; // the computer 1 to 3 
+        Pod;
+        State;
+        Chapter;
+        //Mode;
+        //"Elapsed Time";
+        //"Remaining Time";
     }
     /////////////////////////////////////////////////////////////////
 
@@ -122,10 +139,16 @@ Number of Players
         now = new Date();
         readTimeStamp = now.getTime();
         // now for specific processing
-        if (event.data.includes("state")) {
+        if (event.data.includes("State")) {
             let m = JSON.parse(event.data);
             let podState = document.getElementById("podState");
-            podState.innerText = "pod #" + m.id + " computer # " + m.computer + " state " + m.state + " chapter " + m.chapter + " time " + m.elapsed_time + "/" + m.remaining_time + " players " + m.players + " " + m.pod_status;
+            podState.innerText = "pod #" + m.Pod + " Chapter [" + m.Chapter + "]  ";
+            cps =document.getElementById("copilotStatus");
+            cps.style.color = m.Mode[0];
+            ms =document.getElementById("medicStatus");
+            ms.style.color = m.Mode[1];
+            ccs =document.getElementById("crewchiefStatus");
+            ccs.style.color = m.Mode[2];
         }
     };
 
@@ -219,7 +242,7 @@ Number of Players
         socket.send(cmd);
     }
 
-    function load(a) {
+    function load() {
         const title = ["Orientation", "Intro",
             "Hoist", "Fog",
             "Minefield",
@@ -229,12 +252,14 @@ Number of Players
 
         class loadCmd {
             cmd;
-            title;
+            chapter;
             id;
         }
+        ch = document.getElementById("chapter");
+        a = ch.value;
         d = new loadCmd();
         d.cmd = "load";
-        d.title = title[a];
+        d.chapter = title[a];
         d.id = id;
         cmd = JSON.stringify(d);
         console.log("sending " + cmd);
